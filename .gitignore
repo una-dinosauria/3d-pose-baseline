@@ -1,0 +1,10 @@
+data/
+experiments/
+*~
+*.pyc
+*.h5
+*.mp4
+*.mpeg
+*.swp
+*.png
+*.tar.gz
