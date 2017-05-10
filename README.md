@@ -4,7 +4,7 @@ This is the code for the paper
 
 Julieta Martinez, Rayat Hossain, Javier Romero, James J. Little.
 _A simple yet effective baseline for 3d human pose estimation._
-Arxiv, 2017.
+In arxiv, 2017. https://arxiv.org/pdf/1705.03098.pdf.
 
 The code in this repository was mostly written by
 [Julieta Martinez](https://github.com/una-dinosauria),
@@ -77,7 +77,7 @@ If you use our code, please cite our work
 @article{martinez_2017_3dbaseline,
   title={A simple yet effective baseline for 3d human pose estimation},
   author={Martinez, Julieta and Hossain, Rayat and Romero, Javier and Little, James J.},
-  journal={arXiv preprint arXiv:1406.4966}, <-- this will change
+  journal={arXiv preprint arXiv:1705.03098},
   year={2017}
 }
 ```
