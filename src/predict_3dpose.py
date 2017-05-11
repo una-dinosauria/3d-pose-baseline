@@ -375,7 +375,7 @@ def evaluate_batches( sess, model,
 
     # Compute Euclidean distance error per joint
     sqerr = (poses3d - dec_out)**2 # Squared error between prediction and expected output
-    dists = np.zeros( (sqerr.shape[0], njoints) ) # Array with L2 error per joint in mm
+    dists = np.zeros( (sqerr.shape[0], n_joints) ) # Array with L2 error per joint in mm
     dist_idx = 0
     for k in np.arange(0, n_joints*3, 3):
       # Sum across X,Y, and Z dimenstions to obtain L2 distance
