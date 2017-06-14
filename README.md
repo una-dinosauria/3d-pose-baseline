@@ -25,7 +25,7 @@ to make our code transparent, compact, and easy-to-understand.
 2. Clone this repository and get the data. We provide the [Human3.6M](http://vision.imar.ro/human3.6m/description.php) dataset in 3d points, camera parameters to produce ground truth 2d detections, and [Stacked Hourglass](https://github.com/anewell/pose-hg-demo) detections.
 
 ```bash
-git clone git@github.com:una-dinosauria/3d-pose-baseline.git
+git clone https://github.com/una-dinosauria/3d-pose-baseline.git
 cd 3d-pose-baseline
 mkdir data
 cd data
