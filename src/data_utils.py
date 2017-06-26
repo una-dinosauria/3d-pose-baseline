@@ -370,12 +370,12 @@ def read_2d_predictions( actions, data_dir ):
     actions: list of strings. Actions to load
     data_dir: string. Directory where the data can be loaded from
   Returns
-    train_set: dictionary with loaded 3d poses for training
-    test_set: dictionary with loaded 3d poses for testing
-    data_mean: vector with the mean of the 3d training data
-    data_std: vector with the standard deviation of the 3d training data
-    dim_to_ignore: list with the dimensions to predict
-    dim_to_use: list with the dimensions to not predict
+    train_set: dictionary with loaded 2d stacked hourglass detections for training
+    test_set: dictionary with loaded 2d stacked hourglass detections for testing
+    data_mean: vector with the mean of the 2d training data
+    data_std: vector with the standard deviation of the 2d training data
+    dim_to_ignore: list with the dimensions to not predict
+    dim_to_use: list with the dimensions to predict
   """
 
   train_set = load_stacked_hourglass( data_dir, TRAIN_SUBJECTS, actions)
@@ -387,7 +387,7 @@ def read_2d_predictions( actions, data_dir ):
   train_set = normalize_data( train_set, data_mean, data_std, dim_to_use )
   test_set  = normalize_data( test_set,  data_mean, data_std, dim_to_use )
 
-  return train_set, test_set, data_mean, data_std, dim_to_ignore,dim_to_use
+  return train_set, test_set, data_mean, data_std, dim_to_ignore, dim_to_use
 
 
 def create_2d_data( actions, data_dir, rcams ):
@@ -400,12 +400,12 @@ def create_2d_data( actions, data_dir, rcams ):
     data_dir: string. Directory where the data can be loaded from
     rcams: dictionary with camera parameters
   Returns
-    train_set: dictionary with loaded 3d poses for training
-    test_set: dictionary with loaded 3d poses for testing
-    data_mean: vector with the mean of the 3d training data
-    data_std: vector with the standard deviation of the 3d training data
-    dim_to_ignore: list with the dimensions to predict
-    dim_to_use: list with the dimensions to not predict
+    train_set: dictionary with projected 2d poses for training
+    test_set: dictionary with projected 2d poses for testing
+    data_mean: vector with the mean of the 2d training data
+    data_std: vector with the standard deviation of the 2d training data
+    dim_to_ignore: list with the dimensions to not predict
+    dim_to_use: list with the dimensions to predict
   """
 
   # Load 3d data
@@ -441,8 +441,8 @@ def read_3d_data( actions, data_dir, camera_frame, rcams, predict_14=False ):
     test_set: dictionary with loaded 3d poses for testing
     data_mean: vector with the mean of the 3d training data
     data_std: vector with the standard deviation of the 3d training data
-    dim_to_ignore: list with the dimensions to predict
-    dim_to_use: list with the dimensions to not predict
+    dim_to_ignore: list with the dimensions to not predict
+    dim_to_use: list with the dimensions to predict
     train_root_positions: dictionary with the 3d positions of the root in train
     test_root_positions: dictionary with the 3d positions of the root in test
   """
