@@ -69,6 +69,14 @@ This corresponds to Table 2, next-to-last row. `Ours (SH detections) (MA)`
 On a GTX 1080 GPU, this takes <8 ms for forward+backward computation, and
 <6 ms for forward-only computation per batch of 64.
 
+### Pre-trained model
+
+We also provide a model pre-trained on Stacked-Hourglass detections, available through [google drive](https://drive.google.com/file/d/0BxWzojlLp259MF9qSFpiVjl0cU0/view?usp=sharing)
+
+To test the model, decompress the file at the top level of this project, and call
+
+`python src/predict_3dpose.py --camera_frame --residual --batch_norm --dropout 0.5 --max_norm --evaluateActionWise --use_sh --epochs 1 --sample --load 4874200`
+
 ### Citing
 
 If you use our code, please cite our work
