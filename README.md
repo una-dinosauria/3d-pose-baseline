@@ -82,10 +82,10 @@ To test the model, decompress the file at the top level of this project, and cal
 If you use our code, please cite our work
 
 ```
-@article{martinez_2017_3dbaseline,
+@inproceedings{martinez_2017_3dbaseline,
   title={A simple yet effective baseline for 3d human pose estimation},
   author={Martinez, Julieta and Hossain, Rayat and Romero, Javier and Little, James J.},
-  journal={arXiv preprint arXiv:1705.03098},
+  booktitle={ICCV},
   year={2017}
 }
 ```
