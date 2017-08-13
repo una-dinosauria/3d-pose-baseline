@@ -368,8 +368,8 @@ def evaluate_batches( sess, model,
       for j in range(FLAGS.batch_size):
         gt  = np.reshape(dec_out[j,:],[-1,3])
         out = np.reshape(poses3d[j,:],[-1,3])
-        _, Z, T, b, c = procrustes.compute_similarity_transform(gt,out)
-        out = out.dot(T)+c
+        _, Z, T, b, c = procrustes.compute_similarity_transform(gt,out,compute_optimal_scale=True)
+        out = (b*out.dot(T))+c
 
         poses3d[j,:] = np.reshape(out,[-1,17*3] ) if not(FLAGS.predict_14) else np.reshape(out,[-1,14*3] )
 
