@@ -71,11 +71,15 @@ On a GTX 1080 GPU, this takes <8 ms for forward+backward computation, and
 
 ### Pre-trained model
 
-We also provide a model pre-trained on Stacked-Hourglass detections, available through [google drive](https://drive.google.com/file/d/0BxWzojlLp259MF9qSFpiVjl0cU0/view?usp=sharing)
+We also provide a model pre-trained on Stacked-Hourglass detections, available through [google drive](https://drive.google.com/file/d/0BxWzojlLp259MF9qSFpiVjl0cU0/view?usp=sharing).
 
 To test the model, decompress the file at the top level of this project, and call
 
 `python src/predict_3dpose.py --camera_frame --residual --batch_norm --dropout 0.5 --max_norm --evaluateActionWise --use_sh --epochs 200 --sample --load 4874200`
+
+### Fine-tuned stacked-hourglass detections
+
+You can find the detections produced by Stacked Hourglass after fine-tuning on the H3.6M dataset on [google drive](https://drive.google.com/open?id=0BxWzojlLp259S2FuUXJ6aUNxZkE).
 
 ### Citing
 
