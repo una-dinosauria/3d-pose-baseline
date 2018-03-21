@@ -94,5 +94,9 @@ If you use our code, please cite our work
 }
 ```
 
+### Other implementations
+
+* [Pytorch](https://github.com/weigq) by [@weigq](https://github.com/weigq).
+
 ### License
 MIT
