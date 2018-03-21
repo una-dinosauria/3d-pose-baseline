@@ -96,7 +96,7 @@ If you use our code, please cite our work
 
 ### Other implementations
 
-* [Pytorch](https://github.com/weigq) by [@weigq](https://github.com/weigq).
+* [Pytorch](https://github.com/weigq/3d_pose_baseline_pytorch) by [@weigq](https://github.com/weigq)
 
 ### License
 MIT
