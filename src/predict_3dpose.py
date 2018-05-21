@@ -35,6 +35,7 @@ tf.app.flags.DEFINE_boolean("batch_norm", False, "Use batch_normalization")
 # Data loading
 tf.app.flags.DEFINE_boolean("predict_14", False, "predict 14 joints")
 tf.app.flags.DEFINE_boolean("use_sh", False, "Use 2d pose predictions from StackedHourglass")
+tf.app.flags.DEFINE_float("noise", 0, "Stdev of noise to add to GT")
 tf.app.flags.DEFINE_string("action","All", "The action to train on. 'All' means all the actions")
 
 # Architecture
@@ -174,7 +175,13 @@ def train():
   # 2d GT, 2d SH, normalize both with GT stats
   train_set_3d_raw = data_utils.load_data( FLAGS.data_dir, [1, 5, 6, 7, 8], actions, dim=3 )
   train_set_2d = data_utils.project_to_cameras( train_set_3d_raw, rcams )
-  test_set_2d  = data_utils.load_stacked_hourglass( FLAGS.data_dir, [9, 11], actions)
+  for k in train_set_2d.keys():
+      train_set_2d[k] += np.random.normal(0, FLAGS.noise, train_set_2d[k].shape)
+
+  test_set_3d_raw = data_utils.load_data( FLAGS.data_dir, [1, 5, 6, 7, 8], actions, dim=3 )
+  test_set_2d = data_utils.project_to_cameras( test_set_3d_raw, rcams )
+  for k in test_set_2d.keys():
+      test_set_2d[k] += np.random.normal(0, FLAGS.noise, test_set_2d[k].shape)
 
   complete_train = copy.deepcopy( np.vstack( train_set_2d.values() ))
   data_mean_2d, data_std_2d,  dim_to_ignore_2d, dim_to_use_2d = data_utils.normalization_stats( complete_train, dim=2 )
