@@ -154,11 +154,35 @@ def train():
     actions, FLAGS.data_dir, FLAGS.camera_frame, rcams, FLAGS.predict_14 )
 
   # Read stacked hourglass 2D predictions if use_sh, otherwise use groundtruth 2D projections
-  if FLAGS.use_sh:
-    train_set_2d, test_set_2d, data_mean_2d, data_std_2d, dim_to_ignore_2d, dim_to_use_2d = data_utils.read_2d_predictions(actions, FLAGS.data_dir)
-  else:
-    train_set_2d, test_set_2d, data_mean_2d, data_std_2d, dim_to_ignore_2d, dim_to_use_2d = data_utils.create_2d_data( actions, FLAGS.data_dir, rcams )
-  print( "done reading and normalizing data." )
+  # if FLAGS.use_sh:
+  #   train_set_2d, test_set_2d, data_mean_2d, data_std_2d, dim_to_ignore_2d, dim_to_use_2d = data_utils.read_2d_predictions(actions, FLAGS.data_dir)
+  # else:
+  #   train_set_2d, test_set_2d, data_mean_2d, data_std_2d, dim_to_ignore_2d, dim_to_use_2d = data_utils.create_2d_data( actions, FLAGS.data_dir, rcams )
+
+  # # Load 2d GT and 2d SH
+  # train_set_2d, _, data_mean_2d, data_std_2d, dim_to_ignore_2d, dim_to_use_2d = data_utils.create_2d_data( actions, FLAGS.data_dir, rcams )
+  # _, test_set_2d, data_mean_2d_sh, data_std_2d_sh, dim_to_ignore_2d_sh, _ = data_utils.read_2d_predictions( actions, FLAGS.data_dir )
+  #
+  # # Denormalize 2d SH test
+  # for k in test_set_2d.keys():
+  #   test_set_2d[k] = data_utils.unNormalizeData(test_set_2d[k], data_mean_2d_sh, data_std_2d_sh, dim_to_ignore_2d_sh)
+  #
+  # # Normalize 2d SH test with GT statistics
+  # test_set_2d = data_utils.normalize_data(test_set_2d, data_mean_2d, data_std_2d, dim_to_use_2d)
+  # print( "done reading and normalizing data." )
+
+  # 2d GT, 2d SH, normalize both with GT stats
+  train_set_3d_raw = data_utils.load_data( FLAGS.data_dir, [1, 5, 6, 7, 8], actions, dim=3 )
+  train_set_2d = data_utils.project_to_cameras( train_set_3d_raw, rcams )
+  test_set_2d  = data_utils.load_stacked_hourglass( FLAGS.data_dir, [9, 11], actions)
+
+  complete_train = copy.deepcopy( np.vstack( train_set_2d.values() ))
+  data_mean_2d, data_std_2d,  dim_to_ignore_2d, dim_to_use_2d = data_utils.normalization_stats( complete_train, dim=2 )
+  print("DIM TO USE   ", dim_to_use_2d)
+  print("DIM TO IGNORE", dim_to_ignore_2d)
+  print(train_set_2d[train_set_2d.keys()[0]].shape, test_set_2d[test_set_2d.keys()[0]].shape)
+  train_set_2d = data_utils.normalize_data( train_set_2d, data_mean_2d, data_std_2d, dim_to_use_2d)
+  test_set_2d  = data_utils.normalize_data( test_set_2d,  data_mean_2d, data_std_2d, dim_to_use_2d)
 
   # Avoid using the GPU if requested
   device_count = {"GPU": 0} if FLAGS.use_cpu else {"GPU": 1}

@@ -140,7 +140,8 @@ def load_stacked_hourglass(data_dir, subjects, actions):
 
       print('Reading subject {0}, action {1}'.format(subj, action))
 
-      dpath = os.path.join( data_dir, 'S{0}'.format(subj), 'StackedHourglass/{0}*.h5'.format(action) )
+      # dpath = os.path.join( data_dir, 'S{0}'.format(subj), 'StackedHourglass/{0}*.h5'.format(action) )
+      dpath = os.path.join( data_dir, 'S{0}'.format(subj), 'StackedHourglassFineTuned240/{0}*.h5'.format(action) )
       print( dpath )
 
       fnames = glob.glob( dpath )
