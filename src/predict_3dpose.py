@@ -178,7 +178,7 @@ def train():
   for k in train_set_2d.keys():
       train_set_2d[k] += np.random.normal(0, FLAGS.noise, train_set_2d[k].shape)
 
-  test_set_3d_raw = data_utils.load_data( FLAGS.data_dir, [1, 5, 6, 7, 8], actions, dim=3 )
+  test_set_3d_raw = data_utils.load_data( FLAGS.data_dir, [9, 11], actions, dim=3 )
   test_set_2d = data_utils.project_to_cameras( test_set_3d_raw, rcams )
   for k in test_set_2d.keys():
       test_set_2d[k] += np.random.normal(0, FLAGS.noise, test_set_2d[k].shape)
