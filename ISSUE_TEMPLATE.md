@@ -12,6 +12,7 @@ If you are looking for ways to extend our work such as
 
 * handling arbitrary images
 * handling videos as input
+* using your webcam as input
 * using other 2d detectors
 * large-scale deployment
 * handling missing data
