@@ -98,5 +98,9 @@ If you use our code, please cite our work
 
 * [Pytorch](https://github.com/weigq/3d_pose_baseline_pytorch) by [@weigq](https://github.com/weigq)
 
+### Extensions
+
+* [@ArashHosseini](https://github.com/ArashHosseini) maintains a fork for estimating 3d human poses using the 2d poses estimated by [OpenPose](https://github.com/ArashHosseini/openpose) as input.
+
 ### License
 MIT
