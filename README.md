@@ -97,6 +97,7 @@ If you use our code, please cite our work
 ### Other implementations
 
 * [Pytorch](https://github.com/weigq/3d_pose_baseline_pytorch) by [@weigq](https://github.com/weigq)
+* [MXNet/Gluon](https://github.com/lck1201/simple-effective-3Dpose-baseline) by [@lck1201](https://github.com/lck1201)
 
 ### Extensions
 
