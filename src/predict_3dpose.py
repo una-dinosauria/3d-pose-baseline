@@ -34,7 +34,6 @@ tf.app.flags.DEFINE_boolean("batch_norm", False, "Use batch_normalization")
 
 # Data loading
 tf.app.flags.DEFINE_boolean("predict_14", False, "predict 14 joints")
-tf.app.flags.DEFINE_boolean("use_sh", False, "Use 2d pose predictions from StackedHourglass")
 tf.app.flags.DEFINE_string("action","All", "The action to train on. 'All' means all the actions")
 
 # Architecture
@@ -73,7 +72,6 @@ train_dir = os.path.join( FLAGS.train_dir,
   'procrustes' if FLAGS.procrustes else 'no_procrustes',
   'maxnorm' if FLAGS.max_norm else 'no_maxnorm',
   'batch_normalization' if FLAGS.batch_norm else 'no_batch_normalization',
-  'use_stacked_hourglass' if FLAGS.use_sh else 'not_stacked_hourglass',
   'predict_14' if FLAGS.predict_14 else 'predict_17')
 
 print( train_dir )
@@ -112,7 +110,7 @@ def create_model( session, actions, batch_size ):
   if FLAGS.load <= 0:
     # Create a new model from scratch
     print("Creating model with fresh parameters.")
-    session.run( tf.global_variables_initializer() )
+    session.run( tf.compat.v1.global_variables_initializer() )
     return model
 
   # Load a previously saved model
@@ -153,18 +151,18 @@ def train():
   train_set_3d, test_set_3d, data_mean_3d, data_std_3d, dim_to_ignore_3d, dim_to_use_3d, train_root_positions, test_root_positions = data_utils.read_3d_data(
     actions, FLAGS.data_dir, FLAGS.camera_frame, rcams, FLAGS.predict_14 )
 
-  # Read stacked hourglass 2D predictions if use_sh, otherwise use groundtruth 2D projections
-  if FLAGS.use_sh:
-    train_set_2d, test_set_2d, data_mean_2d, data_std_2d, dim_to_ignore_2d, dim_to_use_2d = data_utils.read_2d_predictions(actions, FLAGS.data_dir)
-  else:
-    train_set_2d, test_set_2d, data_mean_2d, data_std_2d, dim_to_ignore_2d, dim_to_use_2d = data_utils.create_2d_data( actions, FLAGS.data_dir, rcams )
+  # Read groundtruth 2D projections
+  train_set_2d, test_set_2d, data_mean_2d, data_std_2d, dim_to_ignore_2d, dim_to_use_2d = data_utils.create_2d_data( actions, FLAGS.data_dir, rcams )
   print( "done reading and normalizing data." )
 
   # Avoid using the GPU if requested
   device_count = {"GPU": 0} if FLAGS.use_cpu else {"GPU": 1}
-  with tf.Session(config=tf.ConfigProto(
-    device_count=device_count,
-    allow_soft_placement=True )) as sess:
+  with tf.compat.v1.compat.v1.Session(
+    config=tf.ConfigProto(
+      device_count=device_count,
+      allow_soft_placement=True
+    )
+  ) as sess:
 
     # === Create the model ===
     print("Creating %d bi-layers of %d units." % (FLAGS.num_layers, FLAGS.linear_size))
@@ -410,14 +408,11 @@ def sample():
   train_set_3d, test_set_3d, data_mean_3d, data_std_3d, dim_to_ignore_3d, dim_to_use_3d, train_root_positions, test_root_positions = data_utils.read_3d_data(
     actions, FLAGS.data_dir, FLAGS.camera_frame, rcams, FLAGS.predict_14 )
 
-  if FLAGS.use_sh:
-    train_set_2d, test_set_2d, data_mean_2d, data_std_2d, dim_to_ignore_2d, dim_to_use_2d = data_utils.read_2d_predictions(actions, FLAGS.data_dir)
-  else:
-    train_set_2d, test_set_2d, data_mean_2d, data_std_2d, dim_to_ignore_2d, dim_to_use_2d = data_utils.create_2d_data( actions, FLAGS.data_dir, rcams )
+  train_set_2d, test_set_2d, data_mean_2d, data_std_2d, dim_to_ignore_2d, dim_to_use_2d = data_utils.create_2d_data( actions, FLAGS.data_dir, rcams )
   print( "done reading and normalizing data." )
 
   device_count = {"GPU": 0} if FLAGS.use_cpu else {"GPU": 1}
-  with tf.Session(config=tf.ConfigProto( device_count = device_count )) as sess:
+  with tf.compat.v1.Session(config=tf.ConfigProto( device_count = device_count )) as sess:
     # === Create the model ===
     print("Creating %d layers of %d units." % (FLAGS.num_layers, FLAGS.linear_size))
     batch_size = 128
@@ -534,4 +529,4 @@ def main(_):
     train()
 
 if __name__ == "__main__":
-  tf.app.run()
+  tf.compat.v1.app.run()

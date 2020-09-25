@@ -10,6 +10,7 @@ from mpl_toolkits.mplot3d import Axes3D
 import cameras
 import viz
 import h5py
+import cdflib
 import glob
 import copy
 
@@ -111,81 +112,6 @@ def load_data( bpath, subjects, actions, dim=3 ):
         assert loaded_seqs == 8, "Expecting 8 sequences, found {0} instead".format( loaded_seqs )
       else:
         assert loaded_seqs == 2, "Expecting 2 sequences, found {0} instead".format( loaded_seqs )
-
-  return data
-
-
-def load_stacked_hourglass(data_dir, subjects, actions):
-  """
-  Load 2d detections from disk, and put it in an easy-to-acess dictionary.
-
-  Args
-    data_dir: string. Directory where to load the data from,
-    subjects: list of integers. Subjects whose data will be loaded.
-    actions: list of strings. The actions to load.
-  Returns
-    data: dictionary with keys k=(subject, action, seqname)
-          values v=(nx(32*2) matrix of 2d stacked hourglass detections)
-          There will be 2 entries per subject/action if loading 3d data
-          There will be 8 entries per subject/action if loading 2d data
-  """
-  # Permutation that goes from SH detections to H36M ordering.
-  SH_TO_GT_PERM = np.array([SH_NAMES.index( h ) for h in H36M_NAMES if h != '' and h in SH_NAMES])
-  assert np.all( SH_TO_GT_PERM == np.array([6,2,1,0,3,4,5,7,8,9,13,14,15,12,11,10]) )
-
-  data = {}
-
-  for subj in subjects:
-    for action in actions:
-
-      print('Reading subject {0}, action {1}'.format(subj, action))
-
-      dpath = os.path.join( data_dir, 'S{0}'.format(subj), 'StackedHourglass/{0}*.h5'.format(action) )
-      print( dpath )
-
-      fnames = glob.glob( dpath )
-
-      loaded_seqs = 0
-      for fname in fnames:
-        seqname = os.path.basename( fname )
-        seqname = seqname.replace('_',' ')
-
-        # This rule makes sure SittingDown is not loaded when Sitting is requested
-        if action == "Sitting" and seqname.startswith( "SittingDown" ):
-          continue
-
-        # This rule makes sure that WalkDog and WalkTogeter are not loaded when
-        # Walking is requested.
-        if seqname.startswith( action ):
-          print( fname )
-          loaded_seqs = loaded_seqs + 1
-
-          # Load the poses from the .h5 file
-          with h5py.File( fname, 'r' ) as h5f:
-            poses = h5f['poses'][:]
-
-            # Permute the loaded data to make it compatible with H36M
-            poses = poses[:,SH_TO_GT_PERM,:]
-
-            # Reshape into n x (32*2) matrix
-            poses = np.reshape(poses,[poses.shape[0], -1])
-            poses_final = np.zeros([poses.shape[0], len(H36M_NAMES)*2])
-
-            dim_to_use_x    = np.where(np.array([x != '' and x != 'Neck/Nose' for x in H36M_NAMES]))[0] * 2
-            dim_to_use_y    = dim_to_use_x+1
-
-            dim_to_use = np.zeros(len(SH_NAMES)*2,dtype=np.int32)
-            dim_to_use[0::2] = dim_to_use_x
-            dim_to_use[1::2] = dim_to_use_y
-            poses_final[:,dim_to_use] = poses
-            seqname = seqname+'-sh'
-            data[ (subj, action, seqname) ] = poses_final
-
-      # Make sure we loaded 8 sequences
-      if (subj == 11 and action == 'Directions'): # <-- this video is damaged
-        assert loaded_seqs == 7, "Expecting 7 sequences, found {0} instead. S:{1} {2}".format(loaded_seqs, subj, action )
-      else:
-        assert loaded_seqs == 8, "Expecting 8 sequences, found {0} instead. S:{1} {2}".format(loaded_seqs, subj, action )
 
   return data
 
@@ -362,34 +288,6 @@ def project_to_cameras( poses_set, cams, ncams=4 ):
   return t2d
 
 
-def read_2d_predictions( actions, data_dir ):
-  """
-  Loads 2d data from precomputed Stacked Hourglass detections
-
-  Args
-    actions: list of strings. Actions to load
-    data_dir: string. Directory where the data can be loaded from
-  Returns
-    train_set: dictionary with loaded 2d stacked hourglass detections for training
-    test_set: dictionary with loaded 2d stacked hourglass detections for testing
-    data_mean: vector with the mean of the 2d training data
-    data_std: vector with the standard deviation of the 2d training data
-    dim_to_ignore: list with the dimensions to not predict
-    dim_to_use: list with the dimensions to predict
-  """
-
-  train_set = load_stacked_hourglass( data_dir, TRAIN_SUBJECTS, actions)
-  test_set  = load_stacked_hourglass( data_dir, TEST_SUBJECTS,  actions)
-
-  complete_train = copy.deepcopy( np.vstack( train_set.values() ))
-  data_mean, data_std,  dim_to_ignore, dim_to_use = normalization_stats( complete_train, dim=2 )
-
-  train_set = normalize_data( train_set, data_mean, data_std, dim_to_use )
-  test_set  = normalize_data( test_set,  data_mean, data_std, dim_to_use )
-
-  return train_set, test_set, data_mean, data_std, dim_to_ignore, dim_to_use
-
-
 def create_2d_data( actions, data_dir, rcams ):
   """
   Creates 2d poses by projecting 3d poses with the corresponding camera
@@ -412,11 +310,12 @@ def create_2d_data( actions, data_dir, rcams ):
   train_set = load_data( data_dir, TRAIN_SUBJECTS, actions, dim=3 )
   test_set  = load_data( data_dir, TEST_SUBJECTS,  actions, dim=3 )
 
+  # Create 2d data by projecting with camera parameters
   train_set = project_to_cameras( train_set, rcams )
   test_set  = project_to_cameras( test_set, rcams )
 
   # Compute normalization statistics.
-  complete_train = copy.deepcopy( np.vstack( train_set.values() ))
+  complete_train = copy.deepcopy( np.vstack( list(train_set.values()) ))
   data_mean, data_std, dim_to_ignore, dim_to_use = normalization_stats( complete_train, dim=2 )
 
   # Divide every dimension independently
@@ -459,7 +358,7 @@ def read_3d_data( actions, data_dir, camera_frame, rcams, predict_14=False ):
   test_set,  test_root_positions  = postprocess_3d( test_set )
 
   # Compute normalization statistics
-  complete_train = copy.deepcopy( np.vstack( train_set.values() ))
+  complete_train = copy.deepcopy( np.vstack( list(train_set.values()) ))
   data_mean, data_std, dim_to_ignore, dim_to_use = normalization_stats( complete_train, dim=3, predict_14=predict_14 )
 
   # Divide every dimension independently

@@ -26,7 +26,7 @@ def kaiming(shape, dtype, partition_info=None):
   Returns
     Tensorflow array with initial weights
   """
-  return(tf.truncated_normal(shape, dtype=dtype)*tf.sqrt(2/float(shape[0])))
+  return(tf.random.truncated_normal(shape, dtype=dtype)*tf.sqrt(2/float(shape[0])))
 
 class LinearModel(object):
   """ A simple Linear+RELU model """
@@ -74,12 +74,12 @@ class LinearModel(object):
     self.input_size  = self.HUMAN_2D_SIZE
     self.output_size = self.HUMAN_3D_SIZE
 
-    self.isTraining = tf.placeholder(tf.bool,name="isTrainingflag")
-    self.dropout_keep_prob = tf.placeholder(tf.float32, name="dropout_keep_prob")
+    self.isTraining = tf.compat.v1.placeholder(tf.bool,name="isTrainingflag")
+    self.dropout_keep_prob = tf.compat.v1.placeholder(tf.float32, name="dropout_keep_prob")
 
     # Summary writers for train and test runs
-    self.train_writer = tf.summary.FileWriter( os.path.join(summaries_dir, 'train' ))
-    self.test_writer  = tf.summary.FileWriter( os.path.join(summaries_dir, 'test' ))
+    self.train_writer = tf.compat.v1.summary.FileWriter( os.path.join(summaries_dir, 'train' ))
+    self.test_writer  = tf.compat.v1.summary.FileWriter( os.path.join(summaries_dir, 'test' ))
 
     self.linear_size   = linear_size
     self.batch_size    = batch_size
@@ -87,14 +87,14 @@ class LinearModel(object):
     self.global_step   = tf.Variable(0, trainable=False, name="global_step")
     decay_steps = 100000  # empirical
     decay_rate = 0.96     # empirical
-    self.learning_rate = tf.train.exponential_decay(self.learning_rate, self.global_step, decay_steps, decay_rate)
+    self.learning_rate = tf.compat.v1.train.exponential_decay(self.learning_rate, self.global_step, decay_steps, decay_rate)
 
     # === Transform the inputs ===
     with vs.variable_scope("inputs"):
 
       # in=2d poses, out=3d poses
-      enc_in  = tf.placeholder(dtype, shape=[None, self.input_size], name="enc_in")
-      dec_out = tf.placeholder(dtype, shape=[None, self.output_size], name="dec_out")
+      enc_in  = tf.compat.v1.placeholder(dtype, shape=[None, self.input_size], name="enc_in")
+      dec_out = tf.compat.v1.placeholder(dtype, shape=[None, self.output_size], name="dec_out")
 
       self.encoder_inputs  = enc_in
       self.decoder_outputs = dec_out
@@ -103,8 +103,8 @@ class LinearModel(object):
     with vs.variable_scope( "linear_model" ):
 
       # === First layer, brings dimensionality up to linear_size ===
-      w1 = tf.get_variable( name="w1", initializer=kaiming, shape=[self.HUMAN_2D_SIZE, linear_size], dtype=dtype )
-      b1 = tf.get_variable( name="b1", initializer=kaiming, shape=[linear_size], dtype=dtype )
+      w1 = tf.compat.v1.get_variable( name="w1", initializer=kaiming, shape=[self.HUMAN_2D_SIZE, linear_size], dtype=dtype )
+      b1 = tf.compat.v1.get_variable( name="b1", initializer=kaiming, shape=[linear_size], dtype=dtype )
       w1 = tf.clip_by_norm(w1,1) if max_norm else w1
       y3 = tf.matmul( enc_in, w1 ) + b1
 
@@ -118,8 +118,8 @@ class LinearModel(object):
         y3 = self.two_linear( y3, linear_size, residual, self.dropout_keep_prob, max_norm, batch_norm, dtype, idx )
 
       # === Last linear layer has HUMAN_3D_SIZE in output ===
-      w4 = tf.get_variable( name="w4", initializer=kaiming, shape=[linear_size, self.HUMAN_3D_SIZE], dtype=dtype )
-      b4 = tf.get_variable( name="b4", initializer=kaiming, shape=[self.HUMAN_3D_SIZE], dtype=dtype )
+      w4 = tf.compat.v1.get_variable( name="w4", initializer=kaiming, shape=[linear_size, self.HUMAN_3D_SIZE], dtype=dtype )
+      b4 = tf.compat.v1.get_variable( name="b4", initializer=kaiming, shape=[self.HUMAN_3D_SIZE], dtype=dtype )
       w4 = tf.clip_by_norm(w4,1) if max_norm else w4
       y = tf.matmul(y3, w4) + b4
       # === End linear model ===
@@ -127,15 +127,15 @@ class LinearModel(object):
     # Store the outputs here
     self.outputs = y
     self.loss = tf.reduce_mean(tf.square(y - dec_out))
-    self.loss_summary = tf.summary.scalar('loss/loss', self.loss)
+    self.loss_summary = tf.compat.v1.summary.scalar('loss/loss', self.loss)
 
     # To keep track of the loss in mm
-    self.err_mm = tf.placeholder( tf.float32, name="error_mm" )
-    self.err_mm_summary = tf.summary.scalar( "loss/error_mm", self.err_mm )
+    self.err_mm = tf.compat.v1.placeholder( tf.float32, name="error_mm" )
+    self.err_mm_summary = tf.compat.v1.summary.scalar( "loss/error_mm", self.err_mm )
 
     # Gradients and update operation for training the model.
-    opt = tf.train.AdamOptimizer( self.learning_rate )
-    update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+    opt = tf.compat.v1.train.AdamOptimizer( self.learning_rate )
+    update_ops = tf.compat.v1.get_collection(tf.compat.v1.GraphKeys.UPDATE_OPS)
 
     with tf.control_dependencies(update_ops):
 
@@ -145,10 +145,10 @@ class LinearModel(object):
       self.updates = opt.apply_gradients(gradients, global_step=self.global_step)
 
     # Keep track of the learning rate
-    self.learning_rate_summary = tf.summary.scalar('learning_rate/learning_rate', self.learning_rate)
+    self.learning_rate_summary = tf.compat.v1.summary.scalar('learning_rate/learning_rate', self.learning_rate)
 
     # To save the model
-    self.saver = tf.train.Saver( tf.global_variables(), max_to_keep=10 )
+    self.saver = tf.compat.v1.train.Saver( tf.compat.v1.global_variables(), max_to_keep=10 )
 
 
   def two_linear( self, xin, linear_size, residual, dropout_keep_prob, max_norm, batch_norm, dtype, idx ):
@@ -173,8 +173,8 @@ class LinearModel(object):
       input_size = int(xin.get_shape()[1])
 
       # Linear 1
-      w2 = tf.get_variable( name="w2_"+str(idx), initializer=kaiming, shape=[input_size, linear_size], dtype=dtype)
-      b2 = tf.get_variable( name="b2_"+str(idx), initializer=kaiming, shape=[linear_size], dtype=dtype)
+      w2 = tf.compat.v1.get_variable( name="w2_"+str(idx), initializer=kaiming, shape=[input_size, linear_size], dtype=dtype)
+      b2 = tf.compat.v1.get_variable( name="b2_"+str(idx), initializer=kaiming, shape=[linear_size], dtype=dtype)
       w2 = tf.clip_by_norm(w2,1) if max_norm else w2
       y = tf.matmul(xin, w2) + b2
       if  batch_norm:
@@ -184,8 +184,8 @@ class LinearModel(object):
       y = tf.nn.dropout( y, dropout_keep_prob )
 
       # Linear 2
-      w3 = tf.get_variable( name="w3_"+str(idx), initializer=kaiming, shape=[linear_size, linear_size], dtype=dtype)
-      b3 = tf.get_variable( name="b3_"+str(idx), initializer=kaiming, shape=[linear_size], dtype=dtype)
+      w3 = tf.compat.v1.get_variable( name="w3_"+str(idx), initializer=kaiming, shape=[linear_size, linear_size], dtype=dtype)
+      b3 = tf.compat.v1.get_variable( name="b3_"+str(idx), initializer=kaiming, shape=[linear_size], dtype=dtype)
       w3 = tf.clip_by_norm(w3,1) if max_norm else w3
       y = tf.matmul(y, w3) + b3
 
