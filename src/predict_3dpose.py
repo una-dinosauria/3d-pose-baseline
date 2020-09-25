@@ -157,7 +157,7 @@ def train():
 
   # Avoid using the GPU if requested
   device_count = {"GPU": 0} if FLAGS.use_cpu else {"GPU": 1}
-  with tf.compat.v1.compat.v1.Session(
+  with tf.compat.v1.Session(
     config=tf.ConfigProto(
       device_count=device_count,
       allow_soft_placement=True

@@ -83,7 +83,7 @@ def load_data( bpath, subjects, actions, dim=3 ):
 
       print('Reading subject {0}, action {1}'.format(subj, action))
 
-      dpath = os.path.join( bpath, 'S{0}'.format(subj), 'MyPoses/{0}D_positions'.format(dim), '{0}*.h5'.format(action) )
+      dpath = os.path.join( bpath, 'S{0}'.format(subj), 'MyPoseFeatures/D{0}_Positions'.format(dim), '{0}*.cdf'.format(action) )
       print( dpath )
 
       fnames = glob.glob( dpath )
@@ -102,10 +102,10 @@ def load_data( bpath, subjects, actions, dim=3 ):
           print( fname )
           loaded_seqs = loaded_seqs + 1
 
-          with h5py.File( fname, 'r' ) as h5f:
-            poses = h5f['{0}D_positions'.format(dim)][:]
+          cdf_file = cdflib.CDF(fname)
+          poses = cdf_file.varget("Pose").squeeze()
+          cdf_file.close()
 
-          poses = poses.T
           data[ (subj, action, seqname) ] = poses
 
       if dim == 2:

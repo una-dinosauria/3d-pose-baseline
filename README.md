@@ -41,13 +41,14 @@ README.md
 LICENCE
 ...
 data/
-  ├── Poses_D3_Positions_S1.tgz
-  ├── Poses_D3_Positions_S11.tgz
-  ├── Poses_D3_Positions_S5.tgz
-  ├── Poses_D3_Positions_S6.tgz
-  ├── Poses_D3_Positions_S7.tgz
-  ├── Poses_D3_Positions_S8.tgz
-  └── Poses_D3_Positions_S9.tgz
+  └── h36m/
+    ├── Poses_D3_Positions_S1.tgz
+    ├── Poses_D3_Positions_S11.tgz
+    ├── Poses_D3_Positions_S5.tgz
+    ├── Poses_D3_Positions_S6.tgz
+    ├── Poses_D3_Positions_S7.tgz
+    ├── Poses_D3_Positions_S8.tgz
+    └── Poses_D3_Positions_S9.tgz
 ```
 
 Now, move to the data folder, and uncompress all the data
@@ -61,13 +62,30 @@ Now, your data directory should look like this:
 
 ```
 data/
-  ├── S1/
-  ├── S11/
-  ├── S5/
-  ├── S6/
-  ├── S7/
-  ├── S8/
-  └── S9/
+  └── h36m/
+    ├── S1/
+    ├── S11/
+    ├── S5/
+    ├── S6/
+    ├── S7/
+    ├── S8/
+    └── S9/
+```
+
+Now, there is one little fix we need to run for the data to have consistent names:
+
+```
+mv h36m/S1/MyPoseFeatures/D3_Positions/TakingPhoto.cdf \
+   h36m/S1/MyPoseFeatures/D3_Positions/Photo.cdf
+
+mv h36m/S1/MyPoseFeatures/D3_Positions/TakingPhoto\ 1.cdf \
+   h36m/S1/MyPoseFeatures/D3_Positions/Photo\ 1.cdf
+
+mv h36m/S1/MyPoseFeatures/D3_Positions/WalkingDog.cdf \
+   h36m/S1/MyPoseFeatures/D3_Positions/WalkDog.cdf
+
+mv h36m/S1/MyPoseFeatures/D3_Positions/WalkingDog\ 1.cdf \
+   h36m/S1/MyPoseFeatures/D3_Positions/WalkDog\ 1.cdf
 ```
 
 We are currently not supporting SH detections anymore, only training from GT 2d detections is possible now.
