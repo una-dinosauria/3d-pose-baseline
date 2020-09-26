@@ -175,7 +175,7 @@ def transform_world_to_camera(poses_set, cams, ncams=4 ):
         camera_coord = cameras.world_to_camera_frame( np.reshape(t3d_world, [-1, 3]), R, T)
         camera_coord = np.reshape( camera_coord, [-1, len(H36M_NAMES)*3] )
 
-        sname = seqname[:-3]+"."+name+".h5" # e.g.: Waiting 1.58860488.h5
+        sname = seqname[:-3]+ name + ".h5" # e.g.: Waiting 1.58860488.h5
         t3d_camera[ (subj, action, sname) ] = camera_coord
 
     return t3d_camera
@@ -282,7 +282,7 @@ def project_to_cameras( poses_set, cams, ncams=4 ):
       pts2d, _, _, _, _ = cameras.project_point_radial( np.reshape(t3d, [-1, 3]), R, T, f, c, k, p )
 
       pts2d = np.reshape( pts2d, [-1, len(H36M_NAMES)*2] )
-      sname = seqname[:-3]+"."+name+".h5" # e.g.: Waiting 1.58860488.h5
+      sname = seqname[:-3]+ name + ".h5"  # e.g.: Waiting 1.58860488.h5
       t2d[ (subj, a, sname) ] = pts2d
 
   return t2d

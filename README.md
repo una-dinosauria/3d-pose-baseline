@@ -29,12 +29,13 @@ to make our code transparent, compact, and easy-to-understand.
 ```bash
 git clone https://github.com/una-dinosauria/3d-pose-baseline.git
 cd 3d-pose-baseline
+mkdir -p data/h36m/
 ```
 
 3. Get the data
 
 Go to http://vision.imar.ro/human3.6m/, log in, and download the `D3 Positions` files for subjects `[1, 5, 6, 7, 8, 9, 11]`,
-and put them under the folder `data`. Your directory structure should look like this
+and put them under the folder `data/h36m`. Your directory structure should look like this
 ```
 src/
 README.md
@@ -54,15 +55,18 @@ data/
 Now, move to the data folder, and uncompress all the data
 
 ```
-cd data/
+cd data/h36m/
 for file in *.tgz; do tar -xvzf $file; done
 ```
+
+Finally, download the `code-v1.2.zip` file, unzip it, and copy the `metadata.xml` file under `data/h36m/`
 
 Now, your data directory should look like this:
 
 ```
 data/
   └── h36m/
+    ├── metadata.xml
     ├── S1/
     ├── S11/
     ├── S5/
@@ -70,9 +74,10 @@ data/
     ├── S7/
     ├── S8/
     └── S9/
+
 ```
 
-Now, there is one little fix we need to run for the data to have consistent names:
+There is one little fix we need to run for the data to have consistent names:
 
 ```
 mv h36m/S1/MyPoseFeatures/D3_Positions/TakingPhoto.cdf \
@@ -88,7 +93,9 @@ mv h36m/S1/MyPoseFeatures/D3_Positions/WalkingDog\ 1.cdf \
    h36m/S1/MyPoseFeatures/D3_Positions/WalkDog\ 1.cdf
 ```
 
-We are currently not supporting SH detections anymore, only training from GT 2d detections is possible now.
+And you are done!
+
+Please note that we are currently not supporting SH detections anymore, only training from GT 2d detections is possible now.
 
 ### Quick demo
 
