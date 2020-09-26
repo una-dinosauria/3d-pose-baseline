@@ -10,7 +10,6 @@ import os
 import random
 import sys
 import time
-import h5py
 import copy
 
 import matplotlib.pyplot as plt

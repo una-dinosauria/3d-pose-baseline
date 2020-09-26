@@ -36,7 +36,7 @@ mkdir -p data/h36m/
 
 Go to http://vision.imar.ro/human3.6m/, log in, and download the `D3 Positions` files for subjects `[1, 5, 6, 7, 8, 9, 11]`,
 and put them under the folder `data/h36m`. Your directory structure should look like this
-```
+```bash
 src/
 README.md
 LICENCE
@@ -54,7 +54,7 @@ data/
 
 Now, move to the data folder, and uncompress all the data
 
-```
+```bash
 cd data/h36m/
 for file in *.tgz; do tar -xvzf $file; done
 ```
@@ -63,7 +63,7 @@ Finally, download the `code-v1.2.zip` file, unzip it, and copy the `metadata.xml
 
 Now, your data directory should look like this:
 
-```
+```bash
 data/
   └── h36m/
     ├── metadata.xml
@@ -79,7 +79,7 @@ data/
 
 There is one little fix we need to run for the data to have consistent names:
 
-```
+```bash
 mv h36m/S1/MyPoseFeatures/D3_Positions/TakingPhoto.cdf \
    h36m/S1/MyPoseFeatures/D3_Positions/Photo.cdf
 
