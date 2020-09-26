@@ -1,27 +1,19 @@
-
 """Predicting 3d poses from 2d joints"""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-
-import math
 import os
-import random
 import sys
 import time
 import copy
 
 import matplotlib.pyplot as plt
 import numpy as np
-from six.moves import xrange  # pylint: disable=redefined-builtin
 import tensorflow as tf
-import procrustes
 
-import viz
 import cameras
 import data_utils
 import linear_model
+import procrustes
+import viz
 
 tf.app.flags.DEFINE_float("learning_rate", 1e-3, "Learning rate")
 tf.app.flags.DEFINE_float("dropout", 1, "Dropout keep probability. 1 means no dropout")
@@ -179,7 +171,7 @@ def train():
     current_epoch = 0
     log_every_n_batches = 100
 
-    for _ in xrange( FLAGS.epochs ):
+    for _ in range( FLAGS.epochs ):
       current_epoch = current_epoch + 1
 
       # === Load training batches for one epoch ===

@@ -1,11 +1,8 @@
-
 """Utilities to deal with the cameras of human3.6m"""
 
-from __future__ import division
-
-import numpy as np
 from xml.dom import minidom
 
+import numpy as np
 
 CAMERA_ID_TO_NAME = {
   1: "54138969",
@@ -13,6 +10,7 @@ CAMERA_ID_TO_NAME = {
   3: "58860488",
   4: "60457274",
 }
+
 
 def project_point_radial( P, R, T, f, c, k, p ):
   """
@@ -44,7 +42,7 @@ def project_point_radial( P, R, T, f, c, k, p ):
   XX = X[:2,:] / X[2,:]
   r2 = XX[0,:]**2 + XX[1,:]**2
 
-  radial = 1 + np.einsum( 'ij,ij->j', np.tile(k,(1, N)), np.array([r2, r2**2, r2**3]) );
+  radial = 1 + np.einsum( 'ij,ij->j', np.tile(k,(1, N)), np.array([r2, r2**2, r2**3]) )
   tan = p[0]*XX[1,:] + p[1]*XX[0,:]
 
   XXX = XX * np.tile(radial+tan,(2,1)) + np.outer(np.array([p[1], p[0]]).reshape(-1), r2 )
@@ -55,6 +53,7 @@ def project_point_radial( P, R, T, f, c, k, p ):
   D = X[2,]
 
   return Proj, D, radial, tan, r2
+
 
 def world_to_camera_frame(P, R, T):
   """
@@ -75,6 +74,7 @@ def world_to_camera_frame(P, R, T):
 
   return X_cam.T
 
+
 def camera_to_world_frame(P, R, T):
   """Inverse of world_to_camera_frame
 
@@ -92,6 +92,7 @@ def camera_to_world_frame(P, R, T):
   X_cam = R.T.dot( P.T ) + T # rotate and translate
 
   return X_cam.T
+
 
 def load_camera_params(w0, subject, camera):
   """Load h36m camera parameters

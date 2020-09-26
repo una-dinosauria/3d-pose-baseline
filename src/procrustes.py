@@ -1,3 +1,5 @@
+import numpy as np
+
 
 def compute_similarity_transform(X, Y, compute_optimal_scale=False):
   """
@@ -16,7 +18,6 @@ def compute_similarity_transform(X, Y, compute_optimal_scale=False):
     b: scaling
     c: translation
   """
-  import numpy as np
 
   muX = X.mean(0)
   muY = Y.mean(0)

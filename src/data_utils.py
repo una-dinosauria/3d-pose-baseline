@@ -1,18 +1,13 @@
-
 """Utility functions for dealing with human3.6m data."""
 
-from __future__ import division
-
-import os
-import numpy as np
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
-import cameras
-import viz
-import h5py
-import cdflib
-import glob
 import copy
+import glob
+import os
+
+import cdflib
+import numpy as np
+
+import cameras
 
 # Human3.6m IDs for training and testing
 TRAIN_SUBJECTS = [1,5,6,7,8]
@@ -58,8 +53,7 @@ SH_NAMES[14] = 'LElbow'
 SH_NAMES[15] = 'LWrist'
 
 def load_data( bpath, subjects, actions, dim=3 ):
-  """
-  Loads 2d ground truth from disk, and puts it in an easy-to-acess dictionary
+  """Loads 2d ground truth from disk, and puts it in an easy-to-acess dictionary
 
   Args
     bpath: String. Path where to load the data from
@@ -74,7 +68,7 @@ def load_data( bpath, subjects, actions, dim=3 ):
   """
 
   if not dim in [2,3]:
-    raise(ValueError, 'dim must be 2 or 3')
+    raise ValueError('dim must be 2 or 3')
 
   data = {}
 
@@ -117,8 +111,7 @@ def load_data( bpath, subjects, actions, dim=3 ):
 
 
 def normalization_stats(complete_data, dim, predict_14=False ):
-  """
-  Computes normalization statistics: mean and stdev, dimensions used and ignored
+  """Computes normalization statistics: mean and stdev, dimensions used and ignored
 
   Args
     complete_data: nxd np array with poses
@@ -131,7 +124,7 @@ def normalization_stats(complete_data, dim, predict_14=False ):
     dimensions_to_use: list of dimensions used in the model
   """
   if not dim in [2,3]:
-    raise(ValueError, 'dim must be 2 or 3')
+    raise ValueError('dim must be 2 or 3')
 
   data_mean = np.mean(complete_data, axis=0)
   data_std  =  np.std(complete_data, axis=0)
@@ -155,8 +148,8 @@ def normalization_stats(complete_data, dim, predict_14=False ):
 
 
 def transform_world_to_camera(poses_set, cams, ncams=4 ):
-    """
-    Project 3d poses from world coordinate to camera coordinate system
+    """Project 3d poses from world coordinate to camera coordinate system
+
     Args
       poses_set: dictionary with 3d poses
       cams: dictionary with cameras
@@ -171,7 +164,7 @@ def transform_world_to_camera(poses_set, cams, ncams=4 ):
       t3d_world = poses_set[ t3dk ]
 
       for c in range( ncams ):
-        R, T, f, c, k, p, name = cams[ (subj, c+1) ]
+        R, T, _, _, _, _, name = cams[ (subj, c+1) ]
         camera_coord = cameras.world_to_camera_frame( np.reshape(t3d_world, [-1, 3]), R, T)
         camera_coord = np.reshape( camera_coord, [-1, len(H36M_NAMES)*3] )
 
@@ -182,8 +175,7 @@ def transform_world_to_camera(poses_set, cams, ncams=4 ):
 
 
 def normalize_data(data, data_mean, data_std, dim_to_use ):
-  """
-  Normalizes a dictionary of poses
+  """Normalizes a dictionary of poses
 
   Args
     data: dictionary where values are
@@ -205,8 +197,7 @@ def normalize_data(data, data_mean, data_std, dim_to_use ):
 
 
 def unNormalizeData(normalized_data, data_mean, data_std, dimensions_to_ignore):
-  """
-  Un-normalizes a matrix whose mean has been substracted and that has been divided by
+  """Un-normalizes a matrix whose mean has been substracted and that has been divided by
   standard deviation. Some dimensions might also be missing
 
   Args
@@ -236,8 +227,7 @@ def unNormalizeData(normalized_data, data_mean, data_std, dimensions_to_ignore):
 
 
 def define_actions( action ):
-  """
-  Given an action string, returns a list of corresponding actions.
+  """Given an action string, returns a list of corresponding actions.
 
   Args
     action: String. either "all" or one of the h36m actions
@@ -255,7 +245,7 @@ def define_actions( action ):
     return actions
 
   if not action in actions:
-    raise( ValueError, "Unrecognized action: %s" % action )
+    raise ValueError("Unrecognized action: %s" % action )
 
   return [action]
 
@@ -289,8 +279,7 @@ def project_to_cameras( poses_set, cams, ncams=4 ):
 
 
 def create_2d_data( actions, data_dir, rcams ):
-  """
-  Creates 2d poses by projecting 3d poses with the corresponding camera
+  """Creates 2d poses by projecting 3d poses with the corresponding camera
   parameters. Also normalizes the 2d poses
 
   Args
@@ -326,8 +315,7 @@ def create_2d_data( actions, data_dir, rcams ):
 
 
 def read_3d_data( actions, data_dir, camera_frame, rcams, predict_14=False ):
-  """
-  Loads 3d poses, zero-centres and normalizes them
+  """Loads 3d poses, zero-centres and normalizes them
 
   Args
     actions: list of strings. Actions to load
@@ -369,8 +357,7 @@ def read_3d_data( actions, data_dir, camera_frame, rcams, predict_14=False ):
 
 
 def postprocess_3d( poses_set ):
-  """
-  Center 3d points around root
+  """Center 3d points around root
 
   Args
     poses_set: dictionary with 3d data

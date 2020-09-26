@@ -1,12 +1,11 @@
-
 """Functions to visualize human poses"""
 
 import matplotlib.pyplot as plt
-import data_utils
 import numpy as np
-import h5py
-import os
 from mpl_toolkits.mplot3d import Axes3D
+
+import data_utils
+
 
 def show3Dpose(channels, ax, lcolor="#3498db", rcolor="#e74c3c", add_labels=False): # blue, orange
   """
@@ -65,9 +64,9 @@ def show3Dpose(channels, ax, lcolor="#3498db", rcolor="#e74c3c", add_labels=Fals
   ax.w_yaxis.line.set_color(white)
   ax.w_zaxis.line.set_color(white)
 
+
 def show2Dpose(channels, ax, lcolor="#3498db", rcolor="#e74c3c", add_labels=False):
-  """
-  Visualize a 2d skeleton
+  """Visualize a 2d skeleton
 
   Args
     channels: 64x1 vector. The pose to plot.

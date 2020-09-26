@@ -1,18 +1,12 @@
 
 """Simple model to regress 3d human poses from 2d joint locations"""
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
+import os
 
+import numpy as np
+import tensorflow as tf
 from tensorflow.python.ops import variable_scope as vs
 
-import os
-import numpy as np
-from six.moves import xrange  # pylint: disable=redefined-builtin
-import tensorflow as tf
-import data_utils
-import cameras as cam
 
 def kaiming(shape, dtype, partition_info=None):
   """Kaiming initialization as described in https://arxiv.org/pdf/1502.01852.pdf
@@ -168,7 +162,7 @@ class LinearModel(object):
       y: the batch after it leaves the block
     """
 
-    with vs.variable_scope( "two_linear_"+str(idx) ) as scope:
+    with vs.variable_scope( "two_linear_"+str(idx) ):
 
       input_size = int(xin.get_shape()[1])
 
