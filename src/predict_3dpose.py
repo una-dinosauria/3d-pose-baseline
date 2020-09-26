@@ -10,7 +10,6 @@ import os
 import random
 import sys
 import time
-import h5py
 import copy
 
 import matplotlib.pyplot as plt
@@ -34,7 +33,6 @@ tf.app.flags.DEFINE_boolean("batch_norm", False, "Use batch_normalization")
 
 # Data loading
 tf.app.flags.DEFINE_boolean("predict_14", False, "predict 14 joints")
-tf.app.flags.DEFINE_boolean("use_sh", False, "Use 2d pose predictions from StackedHourglass")
 tf.app.flags.DEFINE_string("action","All", "The action to train on. 'All' means all the actions")
 
 # Architecture
@@ -44,10 +42,10 @@ tf.app.flags.DEFINE_boolean("residual", False, "Whether to add a residual connec
 
 # Evaluation
 tf.app.flags.DEFINE_boolean("procrustes", False, "Apply procrustes analysis at test time")
-tf.app.flags.DEFINE_boolean("evaluateActionWise",False, "The dataset to use either h36m or heva")
+tf.app.flags.DEFINE_boolean("evaluateActionWise", False, "The dataset to use either h36m or heva")
 
 # Directories
-tf.app.flags.DEFINE_string("cameras_path","data/h36m/cameras.h5","Directory to load camera parameters")
+tf.app.flags.DEFINE_string("cameras_path","data/h36m/metadata.xml", "File with h36m metadata, including cameras")
 tf.app.flags.DEFINE_string("data_dir",   "data/h36m/", "Data directory")
 tf.app.flags.DEFINE_string("train_dir", "experiments", "Training directory.")
 
@@ -73,7 +71,6 @@ train_dir = os.path.join( FLAGS.train_dir,
   'procrustes' if FLAGS.procrustes else 'no_procrustes',
   'maxnorm' if FLAGS.max_norm else 'no_maxnorm',
   'batch_normalization' if FLAGS.batch_norm else 'no_batch_normalization',
-  'use_stacked_hourglass' if FLAGS.use_sh else 'not_stacked_hourglass',
   'predict_14' if FLAGS.predict_14 else 'predict_17')
 
 print( train_dir )
@@ -112,7 +109,7 @@ def create_model( session, actions, batch_size ):
   if FLAGS.load <= 0:
     # Create a new model from scratch
     print("Creating model with fresh parameters.")
-    session.run( tf.global_variables_initializer() )
+    session.run( tf.compat.v1.global_variables_initializer() )
     return model
 
   # Load a previously saved model
@@ -147,24 +144,25 @@ def train():
 
   # Load camera parameters
   SUBJECT_IDS = [1,5,6,7,8,9,11]
-  rcams = cameras.load_cameras(FLAGS.cameras_path, SUBJECT_IDS)
+  this_file = os.path.dirname(os.path.realpath(__file__))
+  rcams = cameras.load_cameras(os.path.join(this_file, "..", FLAGS.cameras_path), SUBJECT_IDS)
 
   # Load 3d data and load (or create) 2d projections
   train_set_3d, test_set_3d, data_mean_3d, data_std_3d, dim_to_ignore_3d, dim_to_use_3d, train_root_positions, test_root_positions = data_utils.read_3d_data(
     actions, FLAGS.data_dir, FLAGS.camera_frame, rcams, FLAGS.predict_14 )
 
-  # Read stacked hourglass 2D predictions if use_sh, otherwise use groundtruth 2D projections
-  if FLAGS.use_sh:
-    train_set_2d, test_set_2d, data_mean_2d, data_std_2d, dim_to_ignore_2d, dim_to_use_2d = data_utils.read_2d_predictions(actions, FLAGS.data_dir)
-  else:
-    train_set_2d, test_set_2d, data_mean_2d, data_std_2d, dim_to_ignore_2d, dim_to_use_2d = data_utils.create_2d_data( actions, FLAGS.data_dir, rcams )
+  # Read groundtruth 2D projections
+  train_set_2d, test_set_2d, data_mean_2d, data_std_2d, dim_to_ignore_2d, dim_to_use_2d = data_utils.create_2d_data( actions, FLAGS.data_dir, rcams )
   print( "done reading and normalizing data." )
 
   # Avoid using the GPU if requested
   device_count = {"GPU": 0} if FLAGS.use_cpu else {"GPU": 1}
-  with tf.Session(config=tf.ConfigProto(
-    device_count=device_count,
-    allow_soft_placement=True )) as sess:
+  with tf.compat.v1.Session(
+    config=tf.ConfigProto(
+      device_count=device_count,
+      allow_soft_placement=True
+    )
+  ) as sess:
 
     # === Create the model ===
     print("Creating %d bi-layers of %d units." % (FLAGS.num_layers, FLAGS.linear_size))
@@ -311,26 +309,25 @@ def evaluate_batches( sess, model,
   May be used to evaluate all actions or a single action.
 
   Args
-    sess
-    model
-    data_mean_3d
-    data_std_3d
-    dim_to_use_3d
-    dim_to_ignore_3d
-    data_mean_2d
-    data_std_2d
-    dim_to_use_2d
-    dim_to_ignore_2d
-    current_step
-    encoder_inputs
-    decoder_outputs
-    current_epoch
+    sess: tensorflow session
+    model: tensorflow model to run evaluation with
+    data_mean_3d: the mean of the training data in 3d
+    data_std_3d: the standard deviation of the training data in 3d
+    dim_to_use_3d: out of all the 96 dimensions that represent a 3d body in h36m, compute results for this subset
+    dim_to_ignore_3d: complelment of the above
+    data_mean_2d: mean of the training data in 2d
+    data_std_2d: standard deviation of the training data in 2d
+    dim_to_use_2d: out of the 64 dimensions that represent a body in 2d in h35m, use this subset
+    dim_to_ignore_2d: complement of the above
+    current_step: training iteration step
+    encoder_inputs: input for the network
+    decoder_outputs: expected output for the network
+    current_epoch: current training epoch
   Returns
-
-    total_err
-    joint_err
-    step_time
-    loss
+    total_err: average mm error over all joints
+    joint_err: average mm error per joint
+    step_time: time it took to evaluate one batch
+    loss: validation loss of the network
   """
 
   n_joints = 17 if not(FLAGS.predict_14) else 14
@@ -404,20 +401,18 @@ def sample():
 
   # Load camera parameters
   SUBJECT_IDS = [1,5,6,7,8,9,11]
-  rcams = cameras.load_cameras(FLAGS.cameras_path, SUBJECT_IDS)
+  this_file = os.path.dirname(os.path.realpath(__file__))
+  rcams = cameras.load_cameras(os.path.join(this_file, "..", FLAGS.cameras_path), SUBJECT_IDS)
 
   # Load 3d data and load (or create) 2d projections
   train_set_3d, test_set_3d, data_mean_3d, data_std_3d, dim_to_ignore_3d, dim_to_use_3d, train_root_positions, test_root_positions = data_utils.read_3d_data(
     actions, FLAGS.data_dir, FLAGS.camera_frame, rcams, FLAGS.predict_14 )
 
-  if FLAGS.use_sh:
-    train_set_2d, test_set_2d, data_mean_2d, data_std_2d, dim_to_ignore_2d, dim_to_use_2d = data_utils.read_2d_predictions(actions, FLAGS.data_dir)
-  else:
-    train_set_2d, test_set_2d, data_mean_2d, data_std_2d, dim_to_ignore_2d, dim_to_use_2d = data_utils.create_2d_data( actions, FLAGS.data_dir, rcams )
+  train_set_2d, test_set_2d, data_mean_2d, data_std_2d, dim_to_ignore_2d, dim_to_use_2d = data_utils.create_2d_data( actions, FLAGS.data_dir, rcams )
   print( "done reading and normalizing data." )
 
   device_count = {"GPU": 0} if FLAGS.use_cpu else {"GPU": 1}
-  with tf.Session(config=tf.ConfigProto( device_count = device_count )) as sess:
+  with tf.compat.v1.Session(config=tf.ConfigProto( device_count = device_count )) as sess:
     # === Create the model ===
     print("Creating %d layers of %d units." % (FLAGS.num_layers, FLAGS.linear_size))
     batch_size = 128
@@ -431,7 +426,7 @@ def sample():
 
       # keys should be the same if 3d is in camera coordinates
       key3d = key2d if FLAGS.camera_frame else (subj, b, '{0}.h5'.format(fname.split('.')[0]))
-      key3d = (subj, b, fname[:-3]) if (fname.endswith('-sh')) and FLAGS.camera_frame else key3d
+      # key3d = (subj, b, fname[:-3]) if (fname.endswith('-sh')) and FLAGS.camera_frame else key3d
 
       enc_in  = test_set_2d[ key2d ]
       n2d, _ = enc_in.shape
@@ -534,4 +529,4 @@ def main(_):
     train()
 
 if __name__ == "__main__":
-  tf.app.run()
+  tf.compat.v1.app.run()

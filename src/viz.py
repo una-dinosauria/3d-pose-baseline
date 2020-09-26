@@ -53,7 +53,6 @@ def show3Dpose(channels, ax, lcolor="#3498db", rcolor="#e74c3c", add_labels=Fals
   ax.get_xaxis().set_ticklabels([])
   ax.get_yaxis().set_ticklabels([])
   ax.set_zticklabels([])
-  ax.set_aspect('equal')
 
   # Get rid of the panes (actually, make them white)
   white = (1.0, 1.0, 1.0, 0.0)
